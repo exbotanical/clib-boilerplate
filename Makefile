@@ -62,17 +62,16 @@ clean:
 	rm -f $(OBJ) $(STATIC_TARGET) $(DYNAMIC_TARGET) $(EXAMPLE_TARGET) $(TEST_TARGET)
 
 test: $(STATIC_TARGET)
-	$(foreach test,$(TESTS),					  																											\
-		$(MAKE) .compile_test file=$(test); 																										\
-		printf "\033[1;32m\nRunning test $(patsubst $(TESTDIR)/%,%,$(test))...\n$(SEPARATOR)\n\033[0m";	\
-		./test;\
- 	)
-	rm $(TEST_TARGET)
+	$(CC) $(TESTS) $(wildcard $(DEPSDIR)/tap.c/*.c) $(STATIC_TARGET) -I$(LINCDIR) -I$(SRCDIR) -I$(DEPSDIR) $(LIBS) -o $(TEST_TARGET)
+	./$(TEST_TARGET)
+	$(MAKE) clean
 
-.compile_test:
-	$(CC) $(CFLAGS) $(file) $(TEST_DEPS) $(STATIC_TARGET) -I$(SRCDIR) -I$(DEPSDIR) $(LIBS) -o $(TEST_TARGET)
+valgrind: $(STATIC_TARGET)
+	$(CC) $(TESTS) $(wildcard $(DEPSDIR)/tap.c/*.c) $(STATIC_TARGET) -I$(LINCDIR) -I$(SRCDIR) -I$(DEPSDIR) $(LIBS) -o $(TEST_TARGET)
+	valgrind --leak-check=full --track-origins=yes -s ./$(TEST_TARGET)
+	$(MAKE) clean
 
 lint:
 	$(LINTER) -i $(wildcard $(SRCDIR)/*) $(wildcard $(TESTDIR)/*) $(wildcard $(LINCDIR)/*) $(wildcard $(EXAMPLEDIR)/*)
 
-.PHONY: clean test .compile_test all obj install uninstall lint
+.PHONY: clean test all obj install uninstall lint valgrind
