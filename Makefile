@@ -2,7 +2,7 @@ CC ?= gcc
 AR ?= ar
 LINTER ?= clang-format
 
-LIB := <project>
+LIB := lib<project>
 
 PREFIX := /usr/local
 INCDIR := $(PREFIX)/include
