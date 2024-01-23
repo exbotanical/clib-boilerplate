@@ -1,4 +1,4 @@
-#include "tap.c/tap.h"
+#include "libtap/libtap.h"
 #include "tests.h"
 
 int

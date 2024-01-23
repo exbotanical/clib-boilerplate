@@ -19,8 +19,8 @@ EXAMPLE_TARGET := example
 TEST_TARGET := test
 
 SRC := $(wildcard $(SRCDIR)/*.c)
-TEST_DEPS := $(wildcard $(DEPSDIR)/tap.c/*.c)
-DEPS := $(filter-out $(wildcard $(DEPSDIR)/tap.c/*), $(wildcard $(DEPSDIR)/*/*.c))
+TEST_DEPS := $(wildcard $(DEPSDIR)/libtap/*.c)
+DEPS := $(filter-out $(wildcard $(DEPSDIR)/libtap/*), $(wildcard $(DEPSDIR)/*/*.c))
 OBJ := $(addprefix obj/, $(notdir $(SRC:.c=.o)) $(notdir $(DEPS:.c=.o)))
 
 CFLAGS := -I$(LINCDIR) -I$(DEPSDIR) -Wall -Wextra -pedantic -std=c17
@@ -62,12 +62,12 @@ clean:
 	rm -f $(OBJ) $(STATIC_TARGET) $(DYNAMIC_TARGET) $(EXAMPLE_TARGET) $(TEST_TARGET)
 
 test: $(STATIC_TARGET)
-	$(CC) $(TESTS) $(wildcard $(DEPSDIR)/tap.c/*.c) $(STATIC_TARGET) -I$(LINCDIR) -I$(SRCDIR) -I$(DEPSDIR) $(LIBS) -o $(TEST_TARGET)
+	$(CC) $(TESTS) $(wildcard $(DEPSDIR)/libtap/*.c) $(STATIC_TARGET) -I$(LINCDIR) -I$(SRCDIR) -I$(DEPSDIR) $(LIBS) -o $(TEST_TARGET)
 	./$(TEST_TARGET)
 	$(MAKE) clean
 
 valgrind: $(STATIC_TARGET)
-	$(CC) $(TESTS) $(wildcard $(DEPSDIR)/tap.c/*.c) $(STATIC_TARGET) -I$(LINCDIR) -I$(SRCDIR) -I$(DEPSDIR) $(LIBS) -o $(TEST_TARGET)
+	$(CC) $(TESTS) $(wildcard $(DEPSDIR)/libtap/*.c) $(STATIC_TARGET) -I$(LINCDIR) -I$(SRCDIR) -I$(DEPSDIR) $(LIBS) -o $(TEST_TARGET)
 	valgrind --leak-check=full --track-origins=yes -s ./$(TEST_TARGET)
 	$(MAKE) clean
 

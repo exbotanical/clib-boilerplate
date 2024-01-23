@@ -5,13 +5,9 @@
   "repo": "exbotanical/lib<project>",
   "license": "MIT",
   "description": "",
-  "keywords": [
-
-  ],
-  "src": [
-    "include/lib<project>.h"
-  ],
+  "keywords": [],
+  "src": ["include/lib<project>.h"],
   "development": {
-    "thlorenz/tap.c": "*"
+    "exbotanical/libtap": "*"
   }
 }
