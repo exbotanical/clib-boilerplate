@@ -1,6 +1,6 @@
 include Makefile.config
 
-.PHONY: all obj install uninstall clean test valgrind lint
+.PHONY: all obj install uninstall clean test valgrind fmt
 .DELETE_ON_ERROR:
 
 PREFIX          := /usr/local
@@ -23,14 +23,16 @@ DEPS            := $(filter-out $(wildcard $(DEPSDIR)/libtap/*), $(wildcard $(DE
 TEST_DEPS       := $(wildcard $(DEPSDIR)/libtap/*.c)
 OBJ             := $(addprefix obj/, $(notdir $(SRC:.c=.o)) $(notdir $(DEPS:.c=.o)))
 
-CFLAGS          := -I$(INCDIR) -I$(DEPSDIR) -Wall -Wextra -pedantic -std=c17
-LIBS            := -lm
+INCLUDES        := -I$(INCDIR) -I$(DEPSDIR)
+LIBS            :=
+CFLAGS          := -Wall -Wextra -pedantic -std=c17 $(INCLUDES)
 
+$(DYNAMIC_TARGET): CFLAGS += -shared
 $(DYNAMIC_TARGET): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -shared $(LIBS) -o $(DYNAMIC_TARGET)
+	$(CC) $(CFLAGS) $(LIBS) $^ -o $@
 
 $(STATIC_TARGET): $(OBJ)
-	$(AR) rcs $@ $(OBJ)
+	$(AR) rcs $@ $^
 
 obj/%.o: $(SRCDIR)/%.c $(INCDIR)/$(LIBNAME).h | obj
 	$(CC) $< -c $(CFLAGS) -o $@
@@ -39,33 +41,33 @@ obj/%.o: $(DEPSDIR)/*/%.c | obj
 	$(CC) $< -c $(CFLAGS) -o $@
 
 $(EXAMPLE_TARGET): $(STATIC_TARGET)
-	$(CC) $(CFLAGS) $(EXAMPLEDIR)/main.c $(STATIC_TARGET) $(LIBS) -o $(EXAMPLE_TARGET)
+	$(CC) $(CFLAGS) $(LIBS) $(EXAMPLEDIR)/main.c $< -o $@
 
 all: $(DYNAMIC_TARGET) $(STATIC_TARGET)
 
 obj:
-	mkdir -p obj
+	@mkdir -p obj
 
 install: $(STATIC_TARGET)
-	mkdir -p ${LIBDIR} && cp -f ${STATIC_TARGET} ${LIBDIR}/$(STATIC_TARGET)
-	mkdir -p ${INCDIR} && cp -r $(INCDIR)/$(LIBNAME).h ${INCDIR}
+	@mkdir -p ${LIBDIR} && cp -f ${STATIC_TARGET} ${LIBDIR}/$@
+	@mkdir -p ${INCDIR} && cp -r $(INCDIR)/$(LIBNAME).h ${INCDIR}
 
 uninstall:
-	rm -f ${LIBDIR}/$(STATIC_TARGET)
-	rm -f ${INCDIR}/libys.h
+	@rm -f ${LIBDIR}/$(STATIC_TARGET)
+	@rm -f ${INCDIR}/libys.h
 
 clean:
-	rm -f $(OBJ) $(STATIC_TARGET) $(DYNAMIC_TARGET) $(EXAMPLE_TARGET) $(TEST_TARGET)
+	@rm -f $(OBJ) $(STATIC_TARGET) $(DYNAMIC_TARGET) $(EXAMPLE_TARGET) $(TEST_TARGET)
 
 test: $(STATIC_TARGET)
-	$(CC) $(CFLAGS) $(TESTS) $(TEST_DEPS) $(STATIC_TARGET) $(LIBS) -o $(TEST_TARGET)
+	$(CC) $(CFLAGS) $(TESTS) $(TEST_DEPS) $< $(LIBS) -o $(TEST_TARGET)
 	./$(TEST_TARGET)
-	$(MAKE) clean
+	@$(MAKE) clean
 
 valgrind: $(STATIC_TARGET)
-	$(CC) $(CFLAGS) $(TESTS) $(TEST_DEPS) $(STATIC_TARGET) $(LIBS) -o $(TEST_TARGET)
+	$(CC) $(CFLAGS) $(TESTS) $(TEST_DEPS) $< $(LIBS) -o $(TEST_TARGET)
 	$(VALGRIND) --leak-check=full --track-origins=yes -s ./$(TEST_TARGET)
-	$(MAKE) clean
+	@$(MAKE) clean
 
-lint:
-	$(LINTER) -i $(wildcard $(SRCDIR)/*) $(wildcard $(TESTDIR)/*) $(wildcard $(INCDIR)/*) $(wildcard $(EXAMPLEDIR)/*)
+fmt:
+	@$(FMT) -i $(wildcard $(SRCDIR)/*) $(wildcard $(TESTDIR)/*) $(wildcard $(INCDIR)/*) $(wildcard $(EXAMPLEDIR)/*)
