@@ -29,7 +29,7 @@ CFLAGS          := -Wall -Wextra -pedantic -std=c17 $(INCLUDES)
 
 $(DYNAMIC_TARGET): CFLAGS += -shared
 $(DYNAMIC_TARGET): $(OBJ)
-	$(CC) $(CFLAGS) $(LIBS) $^ -o $@
+	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
 $(STATIC_TARGET): $(OBJ)
 	$(AR) rcs $@ $^
@@ -41,7 +41,7 @@ obj/%.o: $(DEPSDIR)/*/%.c | obj
 	$(CC) $< -c $(CFLAGS) -o $@
 
 $(EXAMPLE_TARGET): $(STATIC_TARGET)
-	$(CC) $(CFLAGS) $(LIBS) $(EXAMPLEDIR)/main.c $< -o $@
+	$(CC) $(CFLAGS) $(EXAMPLEDIR)/main.c $< $(LIBS) -o $@
 
 all: $(DYNAMIC_TARGET) $(STATIC_TARGET)
 
