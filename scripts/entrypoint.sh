@@ -1,6 +1,6 @@
 #!/bin/sh -l
 
-ret="$(make -s test 2>/dev/null)"
+ret="$(make -s unit_test 2>/dev/null)"
 
 echo "$ret"
 

@@ -1,6 +1,6 @@
 include Makefile.config
 
-.PHONY: all obj install uninstall clean test valgrind fmt
+.PHONY: all obj install uninstall clean unit_test unit_test_dev valgrind fmt
 .DELETE_ON_ERROR:
 
 PREFIX          := /usr/local
@@ -59,10 +59,13 @@ uninstall:
 clean:
 	@rm -f $(OBJ) $(STATIC_TARGET) $(DYNAMIC_TARGET) $(EXAMPLE_TARGET) $(TEST_TARGET)
 
-test: $(STATIC_TARGET)
-	$(CC) $(CFLAGS) $(TESTS) $(TEST_DEPS) $< $(LIBS) -o $(TEST_TARGET)
+unit_test: $(STATIC_TARGET)
+	$(CC) $(CFLAGS) $(TESTS) $(TEST_DEPS) $(STATIC_TARGET) -I$(SRCDIR) $(LIBS) -o $(TEST_TARGET)
 	./$(TEST_TARGET)
-	@$(MAKE) clean
+	$(MAKE) clean
+
+unit_test_dev:
+	ls $(SRCDIR)/*.{h,c} $(TESTDIR)/*.{h,c} | entr -s 'make -s unit_test'
 
 valgrind: $(STATIC_TARGET)
 	$(CC) $(CFLAGS) $(TESTS) $(TEST_DEPS) $< $(LIBS) -o $(TEST_TARGET)

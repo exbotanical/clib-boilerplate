@@ -2,8 +2,7 @@
 #include "tests.h"
 
 int
-main (void)
-{
+main (void) {
   plan(0);
 
   done_testing();
