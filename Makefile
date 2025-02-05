@@ -23,22 +23,26 @@ DEPS            := $(filter-out $(wildcard $(DEPSDIR)/libtap/*), $(wildcard $(DE
 TEST_DEPS       := $(wildcard $(DEPSDIR)/libtap/*.c)
 OBJ             := $(addprefix obj/, $(notdir $(SRC:.c=.o)) $(notdir $(DEPS:.c=.o)))
 
+STRICT          := -Wall -Werror -Wextra -Wno-missing-field-initializers \
+	-Wmissing-prototypes -Wstrict-prototypes -Wold-style-definition \
+ 	-Wno-unused-parameter -Wno-unused-function -Wno-unused-value \
+
 INCLUDES        := -I$(INCDIR) -I$(DEPSDIR)
 LIBS            :=
 CFLAGS          := -Wall -Wextra -pedantic -std=c17 $(INCLUDES)
 
 $(DYNAMIC_TARGET): CFLAGS += -shared
 $(DYNAMIC_TARGET): $(OBJ)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+	$(CC) $(CFLAGS) $(STRICT) $^ $(LIBS) -o $@
 
 $(STATIC_TARGET): $(OBJ)
 	$(AR) rcs $@ $^
 
 obj/%.o: $(SRCDIR)/%.c $(INCDIR)/$(LIBNAME).h | obj
-	$(CC) $< -c $(CFLAGS) -o $@
+	$(CC) $< -c $(CFLAGS) $(STRICT) -o $@
 
 obj/%.o: $(DEPSDIR)/*/%.c | obj
-	$(CC) $< -c $(CFLAGS) -o $@
+	$(CC) $< -c $(CFLAGS) $(STRICT) -o $@
 
 $(EXAMPLE_TARGET): $(STATIC_TARGET)
 	$(CC) $(CFLAGS) $(EXAMPLEDIR)/main.c $< $(LIBS) -o $@
@@ -49,12 +53,12 @@ obj:
 	@mkdir -p obj
 
 install: $(STATIC_TARGET)
-	@mkdir -p ${LIBDIR} && cp -f ${STATIC_TARGET} ${LIBDIR}/$@
-	@mkdir -p ${INCDIR} && cp -r $(INCDIR)/$(LIBNAME).h ${INCDIR}
+	@mkdir -p $(LIBDIR) && cp -f $(STATIC_TARGET) $(LIBDIR)/$@
+	@mkdir -p $(INCDIR) && cp -r $(INCDIR)/$(LIBNAME).h $(INCDIR)
 
 uninstall:
-	@rm -f ${LIBDIR}/$(STATIC_TARGET)
-	@rm -f ${INCDIR}/libys.h
+	@rm -f $(LIBDIR)/$(STATIC_TARGET)
+	@rm -f $(INCDIR)/$(LIBNAME).h
 
 clean:
 	@rm -f $(OBJ) $(STATIC_TARGET) $(DYNAMIC_TARGET) $(EXAMPLE_TARGET) $(TEST_TARGET)
